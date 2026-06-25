@@ -1,0 +1,17 @@
+{
+  "name": "Behobia Training",
+  "short_name": "Behobia",
+  "description": "Half Marathon Training Plan — Nov 22, 2026",
+  "start_url": "./training_plan.html",
+  "display": "standalone",
+  "background_color": "#0B3560",
+  "theme_color": "#0B3560",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

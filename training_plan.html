@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Behobia">
   <meta name="theme-color" content="#0B3560">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
   <title>Half Marathon — Nov 22, 2026</title>
   <style>
     :root {
-      --bg:       #F1F0EC;
+      --bg:       #FFFFFF;
       --surface:  #FFFFFF;
       --navy:     #0B3560;
       --navy2:    #174B82;
       --blue-bg:  #E4EEF8; --blue-tx: #0D3D78; --blue-bd: #2473BE;
-      --grn-bg:   #E3EFE5; --grn-tx:  #174D22; --grn-bd:  #2B7A38;
-      --grey-bg:  #ECEAE5; --grey-tx: #50504D; --grey-bd: #9A9891;
-      --race-bg:  #F5E5E8; --race-tx: #791C2B; --race-bd: #B72434;
+      --grn-bg:   #FEE2E2; --grn-tx:  #991B1B; --grn-bd:  #EF4444;
+      --grey-bg:  #FFFFFF; --grey-tx: #6B7280; --grey-bd: #D1D5DB;
+      --race-bg:  #FEF9C3; --race-tx: #854D0E; --race-bd: #EAB308;
       --done-bg:  #D8F2E5; --done-tx: #0A5C2A; --done-bd: #1B8A4E;
       --ph1-bg:#E4EEF8; --ph1-tx:#0D3D78; --ph1-bd:#2473BE;
       --ph2-bg:#E3EFE5; --ph2-tx:#174D22; --ph2-bd:#2B7A38;
@@ -72,7 +76,7 @@
     .hdr-dlabel { font-size: 10px; color: #85B5E8; font-weight: 600; letter-spacing: .05em; }
 
     /* ── Calendar view ───────────────────────────── */
-    #cal-view { padding: 0 12px; }
+    #cal-view { padding: 0 12px; padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 
     .legend {
       display: flex; gap: 12px; flex-wrap: wrap;
@@ -114,11 +118,11 @@
     }
     .ccell .cico { font-size: 11px; line-height: 1; margin-top: 2px; }
     .ccell.today-ring {
-      outline: 2.5px solid var(--grn-bd); outline-offset: -2px;
+      outline: 2.5px solid var(--done-bd); outline-offset: -2px;
     }
 
     /* Phase cards */
-    .phases-wrap { margin-top: 20px; padding-bottom: 100px; }
+    .phases-wrap { margin-top: 20px; padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
     .sec-label {
       font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .12em;
       text-transform: uppercase; padding: 0 4px; margin-bottom: 8px;
@@ -247,6 +251,89 @@
     .race-chip-lbl { font-size: 13px; color: var(--text2); }
     .race-chip-num { font-size: 22px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
 
+    /* ── Bottom Navigation ──────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    #bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: var(--surface); border-top: 1px solid #DDDBD5;
+      display: flex; z-index: 150;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .tab-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 8px 4px 9px; background: none;
+      border: none; cursor: pointer; gap: 3px;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      color: var(--text3);
+    }
+    .tab-btn.active { color: var(--navy); }
+    .tab-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .tab-label { font-size: 10px; font-weight: 600; letter-spacing: .02em; }
+    .tab-btn.active .tab-label { color: var(--navy); }
+
+    /* ── Progress View ──────────────────────────── */
+    #progress-view { padding: 0 12px; padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+    .progress-hero {
+      background: var(--navy); border-radius: var(--r-lg);
+      padding: 22px 20px 18px; margin: 12px 0; color: #fff; text-align: center;
+    }
+    .hero-pct { font-size: 56px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+    .hero-lbl { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .65; margin-top: 2px; }
+    .hero-sub { font-size: 12px; opacity: .6; margin-top: 10px; }
+    .hero-bar-bg { background: rgba(255,255,255,.2); border-radius: 99px; height: 8px; margin-top: 14px; overflow: hidden; }
+    .hero-bar-fill { height: 100%; border-radius: 99px; background: #fff; transition: width .5s ease; }
+    .phase-prog { border-radius: var(--r-md); padding: 13px 14px; margin-bottom: 7px; border: 1px solid transparent; }
+    .phase-prog-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+    .phase-prog-name { font-size: 13px; font-weight: 700; }
+    .phase-prog-count { font-size: 12px; opacity: .7; font-weight: 600; }
+    .phase-prog-desc { font-size: 12px; opacity: .85; line-height: 1.5; margin-bottom: 10px; }
+    .pbar-bg { background: rgba(0,0,0,.1); border-radius: 99px; height: 7px; overflow: hidden; }
+    .pbar-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+
+    /* ── Diary View ─────────────────────────────── */
+    #diary-view { padding: 0 12px; padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+    .diary-new {
+      background: var(--surface); border: 1px solid #DDDBD5;
+      border-radius: var(--r-lg); padding: 14px 16px; margin: 12px 0 10px;
+    }
+    .diary-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .diary-row-lbl { font-size: 13px; font-weight: 500; color: var(--text2); flex-shrink: 0; }
+    .diary-date-inp {
+      flex: 1; border: 1.5px solid #DDDBD5; border-radius: 8px; padding: 7px 10px;
+      font-size: 14px; color: var(--text); background: #F6F5F2; font-family: inherit; outline: none;
+    }
+    .diary-date-inp:focus { border-color: var(--navy); background: #fff; }
+    .diary-ta {
+      width: 100%; border: 1.5px solid #DDDBD5; border-radius: 9px; padding: 10px 12px;
+      font-size: 14px; line-height: 1.55; color: var(--text); background: #F6F5F2;
+      font-family: inherit; resize: none; min-height: 88px; outline: none;
+    }
+    .diary-ta:focus { border-color: var(--navy); background: #fff; }
+    .diary-save {
+      width: 100%; background: var(--navy); color: #fff; border: none;
+      border-radius: var(--r-md); padding: 13px; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 9px; font-family: inherit;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .diary-save:active { opacity: .85; }
+    .diary-entry {
+      background: var(--surface); border: 1px solid #DDDBD5;
+      border-radius: var(--r-lg); padding: 13px 14px; margin-bottom: 8px;
+    }
+    .diary-entry-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .diary-entry-date { font-size: 13px; font-weight: 700; color: var(--text); }
+    .diary-entry-wo { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+    .diary-entry-text { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+    .diary-del {
+      background: none; border: none; color: #C0BDB6; font-size: 15px; cursor: pointer;
+      padding: 0 0 0 8px; flex-shrink: 0; touch-action: manipulation;
+    }
+    .diary-del:active { color: var(--race-tx); }
+    .diary-empty { text-align: center; padding: 32px 16px; color: var(--text3); font-size: 14px; }
+
     /* Week strip */
     .wrow {
       display: flex; align-items: center; gap: 10px;
@@ -256,6 +343,38 @@
     .wrow-ico { font-size: 14px; flex-shrink: 0; }
     .wrow-lbl { font-size: 13px; color: var(--text); flex: 1; }
     .wrow-dist { font-size: 12px; color: var(--text3); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+    /* ── Night mode (20:00 – 07:00) ────────────────── */
+    html.dark {
+      --bg:      #111827;
+      --surface: #1F2937;
+      --text:    #F9FAFB; --text2: #9CA3AF; --text3: #6B7280;
+      --blue-bg: #1E3A5F; --blue-tx: #93C5FD; --blue-bd: #3B82F6;
+      --grn-bg:  #450A0A; --grn-tx:  #FCA5A5; --grn-bd:  #EF4444;
+      --grey-bg: #1F2937; --grey-tx: #9CA3AF; --grey-bd: #374151;
+      --race-bg: #3B2100; --race-tx: #FDE68A; --race-bd: #EAB308;
+      --done-bg: #052E16; --done-tx: #86EFAC; --done-bd: #22C55E;
+      --ph1-bg:  #1E3A5F; --ph1-tx:  #93C5FD; --ph1-bd:  #3B82F6;
+      --ph2-bg:  #052E16; --ph2-tx:  #86EFAC; --ph2-bd:  #22C55E;
+      --ph3-bg:  #3B1F00; --ph3-tx:  #FED7AA; --ph3-bd:  #F97316;
+      --ph4-bg:  #450A0A; --ph4-tx:  #FCA5A5; --ph4-bd:  #EF4444;
+    }
+    html.dark body { background: #111827; }
+    html.dark .legend,
+    html.dark .scard,
+    html.dark .done-btn,
+    html.dark .race-chip,
+    html.dark #bottom-nav,
+    html.dark .diary-entry,
+    html.dark .diary-new       { border-color: #374151; }
+    html.dark .var-btn         { background: #263548; border-color: #374151; }
+    html.dark .diary-date-inp,
+    html.dark .diary-ta        { background: #263548; border-color: #374151; }
+    html.dark .done-check      { border-color: #4B5563; }
+    html.dark .done-btn.done   { background: var(--done-bg); }
+    html.dark .mnav-btn        { color: #93C5FD; }
+    html.dark .mnav-btn:active:not(:disabled) { background: #263548; }
+    html.dark .recovery-tag    { background: #3B1F00; color: #FED7AA; }
   </style>
 </head>
 <body>
@@ -263,9 +382,9 @@
 
   <!-- Header -->
   <header class="hdr">
-    <div class="hdr-eye">Half Marathon Plan</div>
+    <div class="hdr-eye" id="hdr-eye">Half Marathon Plan</div>
     <div class="hdr-row">
-      <div class="hdr-title">Training Calendar</div>
+      <div class="hdr-title" id="hdr-title">Training Calendar</div>
       <div class="hdr-countdown">
         <div class="hdr-days" id="hdr-days">—</div>
         <div class="hdr-dlabel">days to race</div>
@@ -274,7 +393,7 @@
   </header>
 
   <!-- Calendar view -->
-  <div id="cal-view">
+  <div id="cal-view" class="view active">
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:var(--blue-bg);border:1px solid var(--blue-bd)"></div>Run</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--grn-bg);border:1px solid var(--grn-bd)"></div>Strength</div>
@@ -291,10 +410,26 @@
       <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
     </div>
     <div class="cgrid" id="cgrid"></div>
-    <div class="phases-wrap">
-      <div class="sec-label">Phases</div>
-      <div id="phases-list"></div>
+  </div>
+
+  <!-- Progress view -->
+  <div id="progress-view" class="view">
+    <div id="progress-content"></div>
+  </div>
+
+  <!-- Diary view -->
+  <div id="diary-view" class="view">
+    <div class="diary-new">
+      <div class="scard-lbl">New Entry</div>
+      <div class="diary-row">
+        <span class="diary-row-lbl">Date</span>
+        <input type="date" id="diary-date-inp" class="diary-date-inp">
+      </div>
+      <textarea id="diary-ta" class="diary-ta" placeholder="How did the workout feel? What went well, what was hard?"></textarea>
+      <button class="diary-save" onclick="saveDiaryEntry()">Save Entry</button>
     </div>
+    <div class="sec-label" id="diary-count-lbl">Entries</div>
+    <div id="diary-list"></div>
   </div>
 
   <!-- Detail view -->
@@ -310,6 +445,28 @@
     </div>
     <div class="det-body" id="det-body"></div>
   </div>
+
+  <!-- Bottom navigation -->
+  <nav id="bottom-nav">
+    <button class="tab-btn active" id="tab-schedule" onclick="switchTab('schedule')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <span class="tab-label">Schedule</span>
+    </button>
+    <button class="tab-btn" id="tab-progress" onclick="switchTab('progress')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      <span class="tab-label">Progress</span>
+    </button>
+    <button class="tab-btn" id="tab-diary" onclick="switchTab('diary')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      <span class="tab-label">Diary</span>
+    </button>
+  </nav>
 
 </div>
 <script>
@@ -580,7 +737,9 @@ const WEEKS = [
 // ─────────────────────────────────────────────────────────────────
 let done = {};
 let variants = {};
+let diary = [];
 let currentMonthIdx = 0;
+let currentTab = 'schedule';
 let detailDateKey = null;
 
 const months = [];
@@ -595,9 +754,11 @@ const months = [];
 function loadState() {
   try { done     = JSON.parse(localStorage.getItem('hm26_done')     || '{}'); } catch(e){}
   try { variants = JSON.parse(localStorage.getItem('hm26_variants') || '{}'); } catch(e){}
+  try { diary    = JSON.parse(localStorage.getItem('hm26_diary')    || '[]'); } catch(e){}
 }
 function saveDone()     { try { localStorage.setItem('hm26_done',     JSON.stringify(done));     } catch(e){} }
 function saveVariants() { try { localStorage.setItem('hm26_variants', JSON.stringify(variants)); } catch(e){} }
+function saveDiary()    { try { localStorage.setItem('hm26_diary',    JSON.stringify(diary));    } catch(e){} }
 
 // ─────────────────────────────────────────────────────────────────
 //  UTILITIES
@@ -858,6 +1019,139 @@ function nextMonth() {
 }
 
 // ─────────────────────────────────────────────────────────────────
+//  NIGHT MODE  (20:00 – 07:00)
+// ─────────────────────────────────────────────────────────────────
+function isNight() { const h = new Date().getHours(); return h >= 20 || h < 7; }
+function applyTheme() { document.documentElement.classList.toggle('dark', isNight()); }
+
+// ─────────────────────────────────────────────────────────────────
+//  TAB NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+const TAB_TITLES = { schedule: 'Training Calendar', progress: 'Your Progress', diary: 'Training Diary' };
+
+function switchTab(tab) {
+  document.getElementById('cal-view')     .classList.toggle('active', tab === 'schedule');
+  document.getElementById('progress-view').classList.toggle('active', tab === 'progress');
+  document.getElementById('diary-view')   .classList.toggle('active', tab === 'diary');
+  document.getElementById('tab-schedule') .classList.toggle('active', tab === 'schedule');
+  document.getElementById('tab-progress') .classList.toggle('active', tab === 'progress');
+  document.getElementById('tab-diary')    .classList.toggle('active', tab === 'diary');
+  document.getElementById('hdr-title').textContent = TAB_TITLES[tab];
+  currentTab = tab;
+  if (tab === 'progress') renderProgress();
+  if (tab === 'diary')    renderDiary();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  PROGRESS
+// ─────────────────────────────────────────────────────────────────
+function computeProgress() {
+  const phaseStats = PHASES.map(ph => {
+    let total = 0, doneCount = 0;
+    for (let wi = 0; wi < WEEKS.length; wi++) {
+      if (WEEKS[wi].phase !== ph.id) continue;
+      for (let di = 0; di < 7; di++) {
+        if (WEEKS[wi].days[di][0] === 'rest') continue;
+        total++;
+        if (done[toKey(weekDayDate(wi, di))]) doneCount++;
+      }
+    }
+    return { ...ph, total, doneCount };
+  });
+  const totalAll = phaseStats.reduce((a, b) => a + b.total, 0);
+  const doneAll  = phaseStats.reduce((a, b) => a + b.doneCount, 0);
+  return { phaseStats, totalAll, doneAll };
+}
+
+function renderProgress() {
+  const { phaseStats, totalAll, doneAll } = computeProgress();
+  const pct = totalAll > 0 ? Math.round(doneAll / totalAll * 100) : 0;
+
+  const phasesHtml = phaseStats.map(ph => {
+    const phPct = ph.total > 0 ? Math.round(ph.doneCount / ph.total * 100) : 0;
+    return `<div class="phase-prog" style="background:${ph.bg};border-color:${ph.bd};color:${ph.tx}">
+      <div class="phase-prog-row">
+        <div class="phase-prog-name">Phase ${ph.id} — ${ph.name}</div>
+        <div class="phase-prog-count">Wks ${ph.weeks}</div>
+      </div>
+      <div class="phase-prog-desc">${esc(ph.desc)}</div>
+      <div class="phase-prog-row" style="margin-bottom:5px">
+        <span style="font-size:12px;opacity:.7">${ph.doneCount} / ${ph.total} workouts</span>
+        <span style="font-size:12px;font-weight:700">${phPct}%</span>
+      </div>
+      <div class="pbar-bg"><div class="pbar-fill" style="width:${phPct}%;background:${ph.bd}"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('progress-content').innerHTML = `
+    <div class="progress-hero">
+      <div class="hero-pct">${pct}%</div>
+      <div class="hero-lbl">Overall Completion</div>
+      <div class="hero-bar-bg"><div class="hero-bar-fill" style="width:${pct}%"></div></div>
+      <div class="hero-sub">${doneAll} of ${totalAll} workouts completed</div>
+    </div>
+    <div class="sec-label">By Phase</div>
+    ${phasesHtml}
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  DIARY
+// ─────────────────────────────────────────────────────────────────
+function formatDiaryDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m-1, d);
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return `${dayNames[date.getDay()]}, ${d} ${MONTH_NAMES[m-1]} ${y}`;
+}
+
+function saveDiaryEntry() {
+  const dateVal = document.getElementById('diary-date-inp').value;
+  const text    = document.getElementById('diary-ta').value.trim();
+  if (!dateVal || !text) return;
+  diary.unshift({ id: Date.now(), date: dateVal, text });
+  saveDiary();
+  document.getElementById('diary-ta').value = '';
+  renderDiary();
+}
+
+function deleteDiaryEntry(id) {
+  diary = diary.filter(e => e.id !== id);
+  saveDiary();
+  renderDiary();
+}
+
+function renderDiary() {
+  const inp = document.getElementById('diary-date-inp');
+  if (!inp.value) inp.value = toKey(new Date());
+
+  const sorted = [...diary].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+  document.getElementById('diary-count-lbl').textContent =
+    sorted.length > 0 ? `${sorted.length} ${sorted.length === 1 ? 'Entry' : 'Entries'}` : 'Entries';
+
+  if (sorted.length === 0) {
+    document.getElementById('diary-list').innerHTML =
+      '<div class="diary-empty">No entries yet — write your first one above!</div>';
+    return;
+  }
+
+  document.getElementById('diary-list').innerHTML = sorted.map(entry => {
+    const wo = workoutForDate(keyToDate(entry.date));
+    const woHtml = wo
+      ? `<div class="diary-entry-wo">${TYPE_STYLE[wo.d[0]].ico} ${esc(wo.d[1])}${wo.d[2] ? ' · ' + wo.d[2] : ''} · Week ${WEEKS.indexOf(wo.w) + 1}</div>`
+      : '';
+    return `<div class="diary-entry">
+      <div class="diary-entry-hdr">
+        <div class="diary-entry-date">${formatDiaryDate(entry.date)}</div>
+        <button class="diary-del" onclick="deleteDiaryEntry(${entry.id})">✕</button>
+      </div>
+      ${woHtml}
+      <div class="diary-entry-text">${esc(entry.text)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────────────────────────
 (function init() {
@@ -870,13 +1164,18 @@ function nextMonth() {
   );
   currentMonthIdx = idx >= 0 ? idx : 0;
 
+  applyTheme();
+  setInterval(applyTheme, 60000);
+
   updateCountdown();
   renderCalendar();
-  renderPhases();
 
   document.getElementById('prev-btn').addEventListener('click', prevMonth);
   document.getElementById('next-btn').addEventListener('click', nextMonth);
   document.getElementById('back-btn').addEventListener('click', closeDetail);
+
+  // Pre-fill diary date with today
+  document.getElementById('diary-date-inp').value = toKey(today);
 
   // Swipe-right to close detail on mobile
   let touchStartX = 0;
