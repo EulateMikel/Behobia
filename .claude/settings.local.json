@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(\\(Get-Item \"d:\\\\13-AI\\\\Test\\\\training_plan.html\"\\).Length; Get-Content \"d:\\\\13-AI\\\\Test\\\\training_plan.html\" -TotalCount 5; Write-Host \"---TAIL---\"; Get-Content \"d:\\\\13-AI\\\\Test\\\\training_plan.html\" -Tail 5)",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)"
+    ]
+  }
+}

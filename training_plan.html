@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#0B3560">
+  <title>Half Marathon — Nov 22, 2026</title>
+  <style>
+    :root {
+      --bg:       #F1F0EC;
+      --surface:  #FFFFFF;
+      --navy:     #0B3560;
+      --navy2:    #174B82;
+      --blue-bg:  #E4EEF8; --blue-tx: #0D3D78; --blue-bd: #2473BE;
+      --grn-bg:   #E3EFE5; --grn-tx:  #174D22; --grn-bd:  #2B7A38;
+      --grey-bg:  #ECEAE5; --grey-tx: #50504D; --grey-bd: #9A9891;
+      --race-bg:  #F5E5E8; --race-tx: #791C2B; --race-bd: #B72434;
+      --done-bg:  #D8F2E5; --done-tx: #0A5C2A; --done-bd: #1B8A4E;
+      --ph1-bg:#E4EEF8; --ph1-tx:#0D3D78; --ph1-bd:#2473BE;
+      --ph2-bg:#E3EFE5; --ph2-tx:#174D22; --ph2-bd:#2B7A38;
+      --ph3-bg:#FEF2E1; --ph3-tx:#6B3900; --ph3-bd:#BE7610;
+      --ph4-bg:#F5E5E8; --ph4-tx:#791C2B; --ph4-bd:#B72434;
+      --text:  #1A1917;
+      --text2: #55534F;
+      --text3: #8C8A85;
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #1A1917; }
+    body {
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+    }
+    #app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      background: var(--bg);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .hdr {
+      background: var(--navy);
+      padding: 14px 16px 12px;
+      padding-top: max(14px, env(safe-area-inset-top, 14px));
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .hdr-eye {
+      font-size: 10px; font-weight: 700; letter-spacing: .13em;
+      text-transform: uppercase; color: #85B5E8; margin-bottom: 3px;
+    }
+    .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
+    .hdr-title {
+      font-size: 20px; font-weight: 800; color: #fff;
+      letter-spacing: -.025em; line-height: 1.1;
+    }
+    .hdr-countdown { text-align: right; }
+    .hdr-days {
+      font-size: 22px; font-weight: 800; color: #fff; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .hdr-dlabel { font-size: 10px; color: #85B5E8; font-weight: 600; letter-spacing: .05em; }
+
+    /* ── Calendar view ───────────────────────────── */
+    #cal-view { padding: 0 12px; }
+
+    .legend {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      padding: 11px 4px 9px;
+      border-bottom: 1px solid #DDDBD5;
+      margin-bottom: 12px;
+    }
+    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); font-weight: 500; }
+    .leg-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+    .mnav { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; margin-bottom: 10px; }
+    .mnav-btn {
+      background: none; border: none; font-size: 24px; line-height: 1;
+      color: var(--navy); cursor: pointer; padding: 5px 8px; border-radius: 8px;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .mnav-btn:disabled { color: #CAC8C2; }
+    .mnav-btn:active:not(:disabled) { background: #DDD; }
+    .mnav-title { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+
+    .dhdrs {
+      display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin-bottom: 4px;
+    }
+    .dhdrs span {
+      text-align: center; font-size: 10px; font-weight: 600;
+      color: var(--text3); padding: 4px 0; letter-spacing: .04em;
+    }
+    .cgrid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+    .ccell {
+      aspect-ratio: 1; border-radius: 9px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; border: 1.5px solid transparent;
+      position: relative; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      user-select: none; cursor: default; transition: opacity .12s;
+    }
+    .ccell.active { cursor: pointer; }
+    .ccell.active:active { opacity: .72; }
+    .ccell .cnum {
+      font-size: 12px; font-weight: 500; line-height: 1;
+    }
+    .ccell .cico { font-size: 11px; line-height: 1; margin-top: 2px; }
+    .ccell.today-ring {
+      outline: 2.5px solid var(--grn-bd); outline-offset: -2px;
+    }
+
+    /* Phase cards */
+    .phases-wrap { margin-top: 20px; padding-bottom: 100px; }
+    .sec-label {
+      font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .12em;
+      text-transform: uppercase; padding: 0 4px; margin-bottom: 8px;
+    }
+    .phase-card {
+      border-radius: var(--r-md); padding: 11px 14px; margin-bottom: 6px;
+      border: 1px solid transparent;
+    }
+    .phase-card-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+    .phase-card-name { font-size: 13px; font-weight: 700; }
+    .phase-card-wks { font-size: 11px; opacity: .7; font-weight: 600; }
+    .phase-card-desc { font-size: 12px; opacity: .85; line-height: 1.45; }
+
+    /* ── Detail view ─────────────────────────────── */
+    #det-view {
+      position: fixed; inset: 0; background: var(--bg); z-index: 200;
+      transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      /* Contain to max-width on desktop */
+      max-width: 430px; left: 50%; margin-left: -215px;
+    }
+    #det-view.open { transform: translateX(0); }
+    @media (max-width: 430px) {
+      #det-view { left: 0; margin-left: 0; }
+    }
+
+    .det-hbar {
+      background: var(--navy);
+      padding: 10px 16px 12px;
+      padding-top: max(10px, env(safe-area-inset-top, 10px));
+      position: sticky; top: 0; z-index: 10;
+    }
+    .back-btn {
+      background: none; border: none; color: #85B5E8; font-size: 14px; font-weight: 600;
+      cursor: pointer; padding: 5px 0; display: flex; align-items: center; gap: 6px;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .back-btn:active { opacity: .7; }
+    .det-date { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.02em; margin-top: 4px; }
+
+    .det-body {
+      padding: 12px 14px;
+      padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom, 20px)));
+    }
+
+    /* Workout header card */
+    .wo-card {
+      border-radius: var(--r-lg); padding: 18px 16px 14px;
+      margin-bottom: 10px; border: 1px solid transparent;
+    }
+    .wo-week-lbl {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; opacity: .6; margin-bottom: 4px;
+    }
+    .wo-title { font-size: 22px; font-weight: 800; letter-spacing: -.025em; margin-bottom: 10px; }
+    .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      background: rgba(255,255,255,.5); border-radius: 20px;
+      padding: 4px 11px; font-size: 12px; font-weight: 600;
+    }
+
+    /* Generic section card */
+    .scard {
+      background: var(--surface); border: 1px solid #DDDBD5;
+      border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 10px;
+    }
+    .scard-lbl {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text3); margin-bottom: 8px;
+    }
+    .scard-body { font-size: 14px; color: var(--text); line-height: 1.65; }
+
+    /* Variation picker */
+    .var-btn {
+      width: 100%; background: #F6F5F2; border: 1.5px solid #DDDBD5;
+      border-radius: 10px; padding: 10px 12px; text-align: left;
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px; touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .var-btn:last-child { margin-bottom: 0; }
+    .var-radio { font-size: 15px; line-height: 1; flex-shrink: 0; }
+    .var-name { font-size: 13px; color: var(--text); font-weight: 400; }
+    .var-btn.sel .var-name { font-weight: 700; }
+
+    /* Done button */
+    .done-btn {
+      width: 100%; border-radius: var(--r-lg); padding: 16px;
+      border: 1.5px solid #DDDBD5; background: var(--surface);
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer; touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent; margin-bottom: 10px;
+    }
+    .done-btn.done { background: #E6F7EF; border-color: var(--done-bd); }
+    .done-btn:active { opacity: .8; }
+    .done-check {
+      width: 26px; height: 26px; border-radius: 7px; border: 2px solid #C0BDB6;
+      background: transparent; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .done-btn.done .done-check { background: #1B8A4E; border-color: #1B8A4E; }
+    .done-check-mark {
+      display: none; color: #fff; font-size: 14px; font-weight: 800; line-height: 1;
+    }
+    .done-btn.done .done-check-mark { display: block; }
+    .done-lbl { font-size: 15px; font-weight: 700; color: var(--text2); }
+    .done-btn.done .done-lbl { color: #0F5C30; }
+
+    /* Phase badge */
+    .ph-badge { border-radius: var(--r-lg); padding: 12px 14px; margin-bottom: 10px; border: 1px solid transparent; }
+    .ph-badge-name { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3px; }
+    .ph-badge-desc { font-size: 13px; line-height: 1.45; }
+    .recovery-tag {
+      display: inline-block; background: #FEF2E1; border-radius: 6px;
+      padding: 3px 9px; font-size: 11px; font-weight: 700;
+      color: #7A4800; margin-top: 8px;
+    }
+
+    /* Days to race */
+    .race-chip {
+      background: var(--surface); border: 1px solid #DDDBD5;
+      border-radius: var(--r-lg); padding: 12px 16px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .race-chip-lbl { font-size: 13px; color: var(--text2); }
+    .race-chip-num { font-size: 22px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+
+    /* Week strip */
+    .wrow {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px; border-radius: 10px;
+    }
+    .wrow-day { width: 26px; font-size: 11px; font-weight: 600; color: var(--text3); flex-shrink: 0; }
+    .wrow-ico { font-size: 14px; flex-shrink: 0; }
+    .wrow-lbl { font-size: 13px; color: var(--text); flex: 1; }
+    .wrow-dist { font-size: 12px; color: var(--text3); margin-left: auto; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-eye">Half Marathon Plan</div>
+    <div class="hdr-row">
+      <div class="hdr-title">Training Calendar</div>
+      <div class="hdr-countdown">
+        <div class="hdr-days" id="hdr-days">—</div>
+        <div class="hdr-dlabel">days to race</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Calendar view -->
+  <div id="cal-view">
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--blue-bg);border:1px solid var(--blue-bd)"></div>Run</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--grn-bg);border:1px solid var(--grn-bd)"></div>Strength</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--grey-bg);border:1px solid var(--grey-bd)"></div>Rest</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--race-bg);border:1px solid var(--race-bd)"></div>Race</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--done-bg);border:1px solid var(--done-bd)"></div>Done</div>
+    </div>
+    <div class="mnav">
+      <button class="mnav-btn" id="prev-btn">&#8249;</button>
+      <div class="mnav-title" id="mnav-title"></div>
+      <button class="mnav-btn" id="next-btn">&#8250;</button>
+    </div>
+    <div class="dhdrs">
+      <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+    <div class="phases-wrap">
+      <div class="sec-label">Phases</div>
+      <div id="phases-list"></div>
+    </div>
+  </div>
+
+  <!-- Detail view -->
+  <div id="det-view">
+    <div class="det-hbar">
+      <button class="back-btn" id="back-btn">
+        <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+          <path d="M7 1L1 6.5L7 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Calendar
+      </button>
+      <div class="det-date" id="det-date"></div>
+    </div>
+    <div class="det-body" id="det-body"></div>
+  </div>
+
+</div>
+<script>
+// ─────────────────────────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────────────────────────
+const START_DATE = new Date(2026, 5, 22);
+const RACE_DATE  = new Date(2026, 10, 22);
+
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY_NAMES   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+const PHASES = [
+  { id:1, name:'Base',  weeks:'1–6',   bg:'var(--ph1-bg)', tx:'var(--ph1-tx)', bd:'var(--ph1-bd)', desc:'Build aerobic base. Keep all runs easy to moderate.' },
+  { id:2, name:'Build', weeks:'7–13',  bg:'var(--ph2-bg)', tx:'var(--ph2-tx)', bd:'var(--ph2-bd)', desc:'Introduce race-pace miles. Increase interval intensity.' },
+  { id:3, name:'Peak',  weeks:'14–19', bg:'var(--ph3-bg)', tx:'var(--ph3-tx)', bd:'var(--ph3-bd)', desc:'Highest mileage. Race-pace efforts in long runs.' },
+  { id:4, name:'Taper', weeks:'20–22', bg:'var(--ph4-bg)', tx:'var(--ph4-tx)', bd:'var(--ph4-bd)', desc:'Reduce mileage. Stay sharp, arrive fresh.' },
+];
+
+const TYPE_STYLE = {
+  run:      { bg:'var(--blue-bg)', tx:'var(--blue-tx)', bd:'var(--blue-bd)', ico:'🏃' },
+  strength: { bg:'var(--grn-bg)',  tx:'var(--grn-tx)',  bd:'var(--grn-bd)',  ico:'🏋️' },
+  rest:     { bg:'var(--grey-bg)', tx:'var(--grey-tx)', bd:'var(--grey-bd)', ico:'💤' },
+  race:     { bg:'var(--race-bg)', tx:'var(--race-tx)', bd:'var(--race-bd)', ico:'🏁' },
+};
+
+const INTERVAL_VARS = {
+  '5x1km': [
+    { name:'Classic 1km reps',  desc:'2km warm-up. 5×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.' },
+    { name:'Pyramid',           desc:'2km warm-up. 600m – 800m – 1km – 1km – 800m – 600m at 4:00–4:10/km pace, 90 sec recovery between each. 1km cool-down.' },
+    { name:'Cruise intervals',  desc:'2km warm-up. 5×1km at 4:10–4:20/km (tempo-ish effort) with only 60 sec standing recovery. 1km cool-down. Trains lactate clearance.' },
+  ],
+  '6x1km': [
+    { name:'Classic 1km reps', desc:'2km warm-up. 6×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.' },
+    { name:'2km blocks',       desc:'2km warm-up. 3×2km at 4:05–4:15/km with 2 min jog recovery. 1km cool-down. Builds race-pace endurance over longer efforts.' },
+    { name:'400m repeats',     desc:'2km warm-up. 12×400m at 3:50–3:55/km (sharp!) with 60 sec full rest between each. 1km cool-down. Great for leg turnover.' },
+  ],
+  '7x1km': [
+    { name:'Classic 1km reps', desc:'2km warm-up. 7×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.' },
+    { name:'Ladder up/down',   desc:'2km warm-up. 400m – 600m – 800m – 1km – 800m – 600m – 400m at 4:00/km effort, 90 sec recovery each. 1km cool-down.' },
+    { name:'1-2-1 blocks',     desc:'2km warm-up. 1km easy – 2km hard (4:00–4:05/km) – 1km easy, repeat 3 times. No full recovery; the easy km IS the recovery. 1km cool-down.' },
+  ],
+  '8x1km': [
+    { name:'Classic 1km reps', desc:'2km warm-up. 8×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.' },
+    { name:'Broken tempo',     desc:'2km warm-up. 4×2km at 4:10–4:15/km with 90 sec jog recovery. 1km cool-down. Simulates the feel of holding race pace over half marathon distance.' },
+    { name:'Mile reps',        desc:'2km warm-up. 5×1.6km at 4:05–4:10/km with 2 min jog recovery. 1km cool-down. Slightly longer effort than 1km — builds mental toughness.' },
+  ],
+  '4x1km': [
+    { name:'Classic 1km reps',    desc:'2km warm-up. 4×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.' },
+    { name:'Short & sharp 400s',  desc:'2km warm-up. 8×400m at 3:50–3:55/km with 75 sec full rest. 1km cool-down. Taper week — keep legs feeling snappy without accumulating fatigue.' },
+    { name:'Strides + tempo block',desc:'2km warm-up. 6×200m strides at 3:45–3:50/km, 90 sec rest. Then 2km continuous at 4:10/km. 1km cool-down. Race prep sharpener.' },
+  ],
+  '6x1km_taper': [
+    { name:'Classic 1km reps',  desc:'2km warm-up. 6×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down. Stay sharp.' },
+    { name:'Race-pace blocks',  desc:'2km warm-up. 3×(1km at 4:05/km + 1km at 4:20/km) as alternating hard/float, no rest between pairs, 90 sec after each pair. 1km cool-down.' },
+    { name:'Descending reps',   desc:'2km warm-up. 1.5km – 1.2km – 1km – 800m – 600m – 400m, each 5 sec per km faster than the last, starting at 4:15/km. 90 sec jog recovery. 1km cool-down.' },
+  ],
+};
+
+// [type, label, dist, pace, detail, rpe]
+const WEEKS = [
+  // ── Phase 1 ──────────────────────────────────────────────────────
+  { phase:1, rec:false, days:[
+    ['run','Easy run','7km','5:30–6:00/km','Warm up 10 min walk/jog. Run at fully conversational pace. Cool down 5 min walk.','RPE 5/10'],
+    ['strength','Strength A','','','Deadlifts 3×8 · Bulgarian split squats 3×10 · Single-leg hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','40–45 min'],
+    ['run','Easy run','8km','5:30–6:00/km','Steady aerobic run. Focus on form and relaxed breathing. Keep heart rate in Zone 2.','RPE 5/10'],
+    ['rest','Rest','','','Full rest or gentle 20 min walk. Foam roll quads and calves.',''],
+    ['run','Tempo run','6km','4:25–4:35/km','2km easy warm-up, then 4km at tempo effort (comfortably hard). 1km cool-down jog.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Lateral band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','40–45 min'],
+    ['run','Long run','12km','5:10–5:30/km','Build longest run of the week. Comfortable aerobic effort throughout. Hydrate every 4km.','RPE 5–6/10'],
+  ]},
+  { phase:1, rec:false, days:[
+    ['run','Easy run','7km','5:30–6:00/km','Recovery effort from long run. Keep it very easy. Focus on relaxed stride.','RPE 4/10'],
+    ['strength','Strength A','','','Deadlifts 3×8 · Bulgarian split squats 3×10 · Single-leg hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','40–45 min'],
+    ['run','Easy run','9km','5:30–6:00/km','Steady easy run, slightly longer than Monday. Zone 2 heart rate throughout.','RPE 5/10'],
+    ['rest','Rest','','','Full rest. Sleep well tonight ahead of tempo session.',''],
+    ['run','Tempo run','7km','4:25–4:35/km','2km warm-up, 5km tempo effort, no cool-down needed. Push the distance this week.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Lateral band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','40–45 min'],
+    ['run','Long run','13km','5:10–5:30/km','+1km from last week. Easy aerobic effort. No racing the long run.','RPE 5–6/10'],
+  ]},
+  { phase:1, rec:false, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Easy start to the week. Let legs recover from Sunday.','RPE 4/10'],
+    ['strength','Strength A','','','Deadlifts 3×8 · Bulgarian split squats 3×10 · Single-leg hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','40–45 min'],
+    ['run','Intervals','8km','4:00–4:10/km reps','2km warm-up. 5×1km at 4:00–4:10/km with 90 sec recovery jog. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest. Prioritise recovery after intervals.',''],
+    ['run','Tempo run','7km','4:25–4:35/km','2km warm-up, 5km sustained tempo effort. Try to hold even splits.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Lateral band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','40–45 min'],
+    ['run','Long run','14km','5:10–5:30/km','Steady long run. Take a gel at 50 min if going over 75 min.','RPE 5–6/10'],
+  ]},
+  { phase:1, rec:true, days:[
+    ['run','Easy run','6km','5:30–6:00/km','Very easy recovery run. No pressure on pace.','RPE 4/10'],
+    ['strength','Strength A','','','Reduce to 2 sets this week. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Easy run','7km','5:30–6:00/km','Another easy recovery run. Zone 1–2 heart rate only.','RPE 4/10'],
+    ['rest','Rest','','','Complete rest. Body needs this week to consolidate gains.',''],
+    ['run','Easy run','6km','5:30–6:00/km','Short and easy. No quality work this week.','RPE 4/10'],
+    ['rest','Rest','','','Rest or easy walk. Save legs for Sunday.',''],
+    ['run','Long run','11km','5:10–5:30/km','Shorter long run this recovery week. Comfortable throughout.','RPE 5/10'],
+  ]},
+  { phase:1, rec:false, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Back to normal training. Feel refreshed after recovery week.','RPE 5/10'],
+    ['strength','Strength A','','','Deadlifts 3×8 · Bulgarian split squats 3×10 · Single-leg hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','40–45 min'],
+    ['run','Intervals','9km','4:00–4:10/km reps','2km warm-up. 6×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest after hard interval session.',''],
+    ['run','Tempo run','8km','4:25–4:35/km','2km warm-up, 6km tempo effort. This is the key session of the week.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Lateral band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','40–45 min'],
+    ['run','Long run','15km','5:10–5:30/km','Longest run so far. Take a gel at 60 min. Finish the last km slightly faster.','RPE 5–6/10'],
+  ]},
+  { phase:1, rec:false, days:[
+    ['run','Easy run','8km','5:30–6:00/km','End of base phase. Keep easy effort.','RPE 5/10'],
+    ['strength','Strength A','','','Deadlifts 3×8 · Bulgarian split squats 3×10 · Single-leg hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','40–45 min'],
+    ['run','Intervals','9km','4:00–4:10/km reps','2km warm-up. 6×1km at 4:00–4:10/km with 90 sec jog recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','8km','4:25–4:35/km','2km warm-up, 6km tempo. You should be feeling stronger than week 1.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Lateral band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','40–45 min'],
+    ['run','Long run','16km','5:10–5:30/km','Last long run of Phase 1. Take a gel at 60 min. Gel again at 90 min if needed.','RPE 5–6/10'],
+  ]},
+  // ── Phase 2 ──────────────────────────────────────────────────────
+  { phase:2, rec:false, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Start of build phase. Fresh legs. Easy aerobic effort.','RPE 5/10'],
+    ['strength','Strength A','','','Add plyometrics: box jumps 3×8 before main lifts. Deadlifts 3×8 · Split squats 3×10 · Hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','45 min'],
+    ['run','Intervals','10km','4:00–4:10/km reps','2km warm-up. 7×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','9km','4:25–4:35/km','2km warm-up, 7km at tempo effort. Aim to hold consistent splits throughout.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups weighted 3×10 · Band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','45 min'],
+    ['run','Long run','17km','5:10–5:30/km','Long run with last 2km at race pace (4:16/km). Take gel at 60 and 90 min.','RPE 6/10'],
+  ]},
+  { phase:2, rec:true, days:[
+    ['run','Easy run','7km','5:30–6:00/km','Recovery week begins. Easy pace only.','RPE 4/10'],
+    ['strength','Strength A','','','2 sets only this week. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Easy run','8km','5:30–6:00/km','Easy run. No intervals or tempo this recovery week.','RPE 4/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Easy run','7km','5:30–6:00/km','Short easy run to stay moving.','RPE 4/10'],
+    ['rest','Rest','','','Rest or walk only.',''],
+    ['run','Long run','13km','5:10–5:30/km','Shorter long run for recovery week. Comfortable throughout.','RPE 5/10'],
+  ]},
+  { phase:2, rec:false, days:[
+    ['run','Easy run','9km','5:30–6:00/km','Refreshed after recovery week. Back to full training.','RPE 5/10'],
+    ['strength','Strength A','','','Box jumps 3×8. Deadlifts 3×8 · Split squats 3×10 · Hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','45 min'],
+    ['run','Intervals','11km','4:00–4:10/km reps','2km warm-up. 7×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','10km','4:25–4:35/km','2km warm-up, 8km tempo. Longest tempo so far.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','45 min'],
+    ['run','Long run','18km','5:10–5:30/km','Long run with last 3km at race pace. Gel at 60 and 90 min.','RPE 6/10'],
+  ]},
+  { phase:2, rec:false, days:[
+    ['run','Easy run','9km','5:30–6:00/km','Easy effort. Steady state aerobic.','RPE 5/10'],
+    ['strength','Strength A','','','Box jumps 3×8. Deadlifts 3×8 · Split squats 3×10 · Hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','45 min'],
+    ['run','Intervals','11km','4:00–4:10/km reps','2km warm-up. 7×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','10km','4:25–4:35/km','2km warm-up, 8km tempo. Focus on even effort and relaxed form.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','45 min'],
+    ['run','Long run','19km','5:10–5:30/km','Long run with last 3km at race pace. Gel every 40 min.','RPE 6/10'],
+  ]},
+  { phase:2, rec:false, days:[
+    ['run','Easy run','9km','5:30–6:00/km','Easy run. Biggest week coming up.','RPE 5/10'],
+    ['strength','Strength A','','','Box jumps 3×8. Deadlifts 3×8 · Split squats 3×10 · Hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','45 min'],
+    ['run','Intervals','12km','4:00–4:10/km reps','2km warm-up. 8×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest. Big long run coming on Sunday.',''],
+    ['run','Tempo run','11km','4:25–4:35/km','2km warm-up, 9km tempo. Getting close to half marathon tempo distance!','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','45 min'],
+    ['run','Long run','20km','5:10–5:30/km','20km! Last 4km at race pace. Gel every 40 min. Your longest training run.','RPE 6/10'],
+  ]},
+  { phase:2, rec:true, days:[
+    ['run','Easy run','7km','5:30–6:00/km','Well-deserved recovery week. Easy only.','RPE 4/10'],
+    ['strength','Strength A','','','2 sets only. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Easy run','8km','5:30–6:00/km','Easy aerobic run.','RPE 4/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Easy run','7km','5:30–6:00/km','Easy short run.','RPE 4/10'],
+    ['rest','Rest','','','Rest.',''],
+    ['run','Long run','14km','5:10–5:30/km','Recovery week long run. Comfortable and easy.','RPE 5/10'],
+  ]},
+  { phase:2, rec:false, days:[
+    ['run','Easy run','10km','5:30–6:00/km','Final week of build phase. Double digits on the easy run now.','RPE 5/10'],
+    ['strength','Strength A','','','Box jumps 3×8. Deadlifts 3×8 · Split squats 3×10 · Hip thrusts 3×12 · Calf raises 3×15 · Plank 3×45s','45 min'],
+    ['run','Intervals','12km','4:00–4:10/km reps','2km warm-up. 8×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','11km','4:25–4:35/km','2km warm-up, 9km tempo. Strong finish to the build phase.','RPE 7/10'],
+    ['strength','Strength B','','','Step-ups 3×10 · Band walks 3×15 · Single-leg RDL 3×10 · Copenhagen holds 3×20s · Pallof press 3×12','45 min'],
+    ['run','Long run','21km','5:10–5:30/km','Race distance minus 100m! Last 4km at race pace. Gel every 40 min.','RPE 6/10'],
+  ]},
+  // ── Phase 3 ──────────────────────────────────────────────────────
+  { phase:3, rec:false, days:[
+    ['run','Easy run','10km','5:30–6:00/km','Peak phase begins. 10km easy runs are the new normal.','RPE 5/10'],
+    ['strength','Strength A','','','Reduce to 2 sets to absorb running load. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Intervals','13km','4:00–4:10/km reps','2km warm-up. 8×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down. Tough session.','RPE 8–9/10'],
+    ['rest','Rest','','','Full rest. Peak phase demands serious recovery.',''],
+    ['run','Tempo run','12km','4:25–4:35/km','2km warm-up, 10km tempo. 10km at threshold — a huge session.','RPE 7–8/10'],
+    ['strength','Strength B','','','Reduce to 2 sets. Step-ups · Band walks · Single-leg RDL · Copenhagen holds · Pallof press','30 min'],
+    ['run','Long run','22km','5:10–5:30/km','Peak long run. Last 4km at race pace (4:16/km). Gel every 35–40 min. Hardest run.','RPE 6–7/10'],
+  ]},
+  { phase:3, rec:true, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Much-needed recovery week. Really easy.','RPE 4/10'],
+    ['strength','Strength A','','','2 sets, lighter weight. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','25 min'],
+    ['run','Easy run','9km','5:30–6:00/km','Easy aerobic run only.','RPE 4/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Easy run','8km','5:30–6:00/km','Easy run.','RPE 4/10'],
+    ['rest','Rest','','','Rest.',''],
+    ['run','Long run','15km','5:10–5:30/km','Recovery week long run. Easy and comfortable.','RPE 5/10'],
+  ]},
+  { phase:3, rec:false, days:[
+    ['run','Easy run','10km','5:30–6:00/km','Back to peak training.','RPE 5/10'],
+    ['strength','Strength A','','','2 sets. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Intervals','13km','4:00–4:10/km reps','2km warm-up. 8×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8–9/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','12km','4:25–4:35/km','2km warm-up, 10km tempo. You should hold this better than week 14.','RPE 7–8/10'],
+    ['strength','Strength B','','','2 sets. Step-ups · Band walks · Single-leg RDL · Copenhagen holds · Pallof press','30 min'],
+    ['run','Long run','22km','5:10–5:30/km','Second peak long run. Last 4km at race pace. Gel every 35–40 min.','RPE 6–7/10'],
+  ]},
+  { phase:3, rec:false, days:[
+    ['run','Easy run','10km','5:30–6:00/km','Easy run. You\'re at peak fitness now.','RPE 5/10'],
+    ['strength','Strength A','','','2 sets. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Intervals','13km','4:00–4:10/km reps','2km warm-up. 8×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8–9/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','13km','4:25–4:35/km','2km warm-up, 11km tempo. Last big tempo session. Leave it all here.','RPE 7–8/10'],
+    ['strength','Strength B','','','2 sets. Step-ups · Band walks · Single-leg RDL · Copenhagen holds · Pallof press','30 min'],
+    ['run','Long run','21km','5:10–5:30/km','Final 21km run. Last 4km at race pace. Taper starts next week!','RPE 6–7/10'],
+  ]},
+  { phase:3, rec:true, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Recovery week. Easy only.','RPE 4/10'],
+    ['strength','Strength A','','','2 sets. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','25 min'],
+    ['run','Easy run','9km','5:30–6:00/km','Easy run.','RPE 4/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Easy run','8km','5:30–6:00/km','Easy run.','RPE 4/10'],
+    ['rest','Rest','','','Rest.',''],
+    ['run','Long run','16km','5:10–5:30/km','Recovery week long run.','RPE 5/10'],
+  ]},
+  { phase:3, rec:false, days:[
+    ['run','Easy run','10km','5:30–6:00/km','Last week of peak phase. Focus and stay healthy.','RPE 5/10'],
+    ['strength','Strength A','','','2 sets. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Intervals','12km','4:00–4:10/km reps','2km warm-up. 7×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','11km','4:25–4:35/km','2km warm-up, 9km tempo. Controlled effort — don\'t go too hard entering taper.','RPE 7/10'],
+    ['strength','Strength B','','','2 sets. Step-ups · Band walks · Single-leg RDL · Copenhagen holds · Pallof press','30 min'],
+    ['run','Long run','19km','5:10–5:30/km','Last big long run. Last 3km at race pace. Taper starts next week — enjoy this!','RPE 6/10'],
+  ]},
+  // ── Phase 4 ──────────────────────────────────────────────────────
+  { phase:4, rec:false, days:[
+    ['run','Easy run','8km','5:30–6:00/km','Taper begins! Mileage drops but keep quality. Easy start.','RPE 5/10'],
+    ['strength','Strength A','','','Last full strength session. 2 sets. Deadlifts · Split squats · Hip thrusts · Calf raises · Plank','30 min'],
+    ['run','Intervals','10km','4:00–4:10/km reps','2km warm-up. 6×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down. Stay sharp.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','9km','4:25–4:35/km','2km warm-up, 7km tempo. Controlled and confident.','RPE 7/10'],
+    ['strength','Strength B','','','2 sets. Step-ups · Band walks · Single-leg RDL · Copenhagen holds · Pallof press','30 min'],
+    ['run','Long run','16km','5:10–5:30/km','Reduced long run. Last 2km at race pace to stay sharp.','RPE 6/10'],
+  ]},
+  { phase:4, rec:false, days:[
+    ['run','Easy run','7km','5:30–6:00/km','Second taper week. Mileage drops further. Feel the freshness coming.','RPE 4/10'],
+    ['strength','Strength A','','','Light session — 2 sets, reduced weight. No soreness before race week.','20 min'],
+    ['run','Intervals','8km','4:00–4:10/km reps','2km warm-up. 4×1km at 4:00–4:10/km with 90 sec recovery. 1km cool-down.','RPE 8/10'],
+    ['rest','Rest','','','Full rest.',''],
+    ['run','Tempo run','7km','4:25–4:35/km','2km warm-up, 5km tempo. Short but sharp. Last quality session before race.','RPE 7/10'],
+    ['rest','Rest','','','Rest. No strength this week. Save everything for Sunday.',''],
+    ['run','Long run','13km','5:10–5:30/km','Last long run. Keep it easy. Last 2km at race pace. You\'re ready.','RPE 5/10'],
+  ]},
+  { phase:4, rec:false, days:[
+    ['run','Easy shakeout','5km','5:30–6:00/km','Monday easy shakeout. Very easy. Just keep legs moving. No effort at all.','RPE 3/10'],
+    ['rest','Rest','','','Full rest. Eat well, sleep well, stay hydrated.',''],
+    ['run','Strides','4km','Race pace strides','3km easy jog, then 4×100m strides at race pace. Legs should feel fast and light.','RPE 5/10'],
+    ['rest','Rest','','','Rest. Pack your race bag. Sleep early.',''],
+    ['run','Easy shakeout','3km','5:30–6:00/km','3km very easy. Just 15–20 minutes. Keep legs loose. Nothing more.','RPE 3/10'],
+    ['rest','Rest','','','Rest. Eat your carbs. Hydrate. Lay out your kit. Sleep well.',''],
+    ['race','RACE DAY','21.1km','Goal: 4:16/km','Start at 4:20–4:22/km for first 3km. Settle into 4:16/km from km 3–18. Lift and push in the final 3km. You\'ve done the work. Run your race!','Target: 1:30:00'],
+  ]},
+];
+
+// ─────────────────────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────────────────────
+let done = {};
+let variants = {};
+let currentMonthIdx = 0;
+let detailDateKey = null;
+
+const months = [];
+(function(){
+  const c = new Date(2026, 5, 1);
+  while (c <= new Date(2026, 10, 1)) {
+    months.push(new Date(c));
+    c.setMonth(c.getMonth() + 1);
+  }
+})();
+
+function loadState() {
+  try { done     = JSON.parse(localStorage.getItem('hm26_done')     || '{}'); } catch(e){}
+  try { variants = JSON.parse(localStorage.getItem('hm26_variants') || '{}'); } catch(e){}
+}
+function saveDone()     { try { localStorage.setItem('hm26_done',     JSON.stringify(done));     } catch(e){} }
+function saveVariants() { try { localStorage.setItem('hm26_variants', JSON.stringify(variants)); } catch(e){} }
+
+// ─────────────────────────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────────────────────────
+function toKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+function keyToDate(k) {
+  const [y,m,d] = k.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function weekDayDate(wi, di) {
+  const d = new Date(START_DATE);
+  d.setDate(d.getDate() + wi*7 + di);
+  return d;
+}
+function workoutForDate(date) {
+  const ts = date.toDateString();
+  for (let wi=0; wi<WEEKS.length; wi++) {
+    for (let di=0; di<7; di++) {
+      if (weekDayDate(wi,di).toDateString() === ts)
+        return { wi, di, d: WEEKS[wi].days[di], w: WEEKS[wi] };
+    }
+  }
+  return null;
+}
+function daysToRace() {
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.max(0, Math.ceil((RACE_DATE - t) / 86400000));
+}
+function intervalVarKey(detail) {
+  if (detail.includes('5×1km')) return '5x1km';
+  if (detail.includes('6×1km') && detail.includes('Stay sharp')) return '6x1km_taper';
+  if (detail.includes('6×1km')) return '6x1km';
+  if (detail.includes('7×1km')) return '7x1km';
+  if (detail.includes('8×1km')) return '8x1km';
+  if (detail.includes('4×1km')) return '4x1km';
+  return null;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  RENDER CALENDAR
+// ─────────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const md = months[currentMonthIdx];
+  const yr = md.getFullYear(), mo = md.getMonth();
+  document.getElementById('mnav-title').textContent = `${MONTH_NAMES[mo]} ${yr}`;
+  document.getElementById('prev-btn').disabled = currentMonthIdx === 0;
+  document.getElementById('next-btn').disabled = currentMonthIdx === months.length-1;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(yr, mo, 1);
+  const last  = new Date(yr, mo+1, 0);
+  let off = first.getDay() - 1; if (off < 0) off = 6;
+
+  let html = '';
+  for (let i=0; i<off; i++) html += '<div class="ccell" style="visibility:hidden"></div>';
+
+  for (let d=1; d<=last.getDate(); d++) {
+    const date = new Date(yr, mo, d);
+    const dk   = toKey(date);
+    const wo   = workoutForDate(date);
+    const isDone = !!done[dk];
+    const isToday = date.getTime() === today.getTime();
+
+    let bg='transparent', bdc='transparent', txc='#B0AEA8', cls='ccell';
+    if (wo) {
+      cls += ' active';
+      if (isDone) {
+        bg='var(--done-bg)'; bdc='var(--done-bd)'; txc='var(--done-tx)';
+      } else {
+        const s = TYPE_STYLE[wo.d[0]];
+        bg=s.bg; bdc=s.bd; txc=s.tx;
+      }
+    }
+    if (isToday) cls += ' today-ring';
+
+    const ico = wo
+      ? (isDone ? '<div class="cico" style="font-size:12px;font-weight:800;color:var(--done-bd)">✓</div>'
+                : `<div class="cico">${TYPE_STYLE[wo.d[0]].ico}</div>`)
+      : '';
+
+    html += `<div class="${cls}" style="background:${bg};border-color:${bdc}"
+              ${wo ? `onclick="openDetail('${dk}')"` : ''}>
+              <div class="cnum" style="color:${txc};font-weight:${isToday?800:500}">${d}</div>
+              ${ico}
+            </div>`;
+  }
+  document.getElementById('cgrid').innerHTML = html;
+}
+
+function renderPhases() {
+  const html = PHASES.map(p =>
+    `<div class="phase-card" style="background:${p.bg};border-color:${p.bd};color:${p.tx}">
+      <div class="phase-card-row">
+        <div class="phase-card-name">Phase ${p.id} — ${p.name}</div>
+        <div class="phase-card-wks">Wks ${p.weeks}</div>
+      </div>
+      <div class="phase-card-desc">${p.desc}</div>
+    </div>`
+  ).join('');
+  document.getElementById('phases-list').innerHTML = html;
+}
+
+function updateCountdown() {
+  document.getElementById('hdr-days').textContent = daysToRace();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  RENDER DETAIL
+// ─────────────────────────────────────────────────────────────────
+function openDetail(dk) {
+  detailDateKey = dk;
+  renderDetail();
+  document.getElementById('det-view').classList.add('open');
+  document.getElementById('det-view').scrollTop = 0;
+}
+function closeDetail() {
+  document.getElementById('det-view').classList.remove('open');
+  detailDateKey = null;
+}
+
+function renderDetail() {
+  if (!detailDateKey) return;
+  const date = keyToDate(detailDateKey);
+  const wo = workoutForDate(date);
+  if (!wo) return;
+
+  const { wi, di, d, w } = wo;
+  const [type, label, dist, pace, detail, rpe] = d;
+  const s = TYPE_STYLE[type];
+  const ph = PHASES.find(p => p.id === w.phase);
+  const isDone = !!done[detailDateKey];
+  const dayStr = `${DAY_NAMES[di]}, ${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
+
+  document.getElementById('det-date').textContent = dayStr;
+
+  // Interval variations
+  const varKey = label === 'Intervals' ? intervalVarKey(detail) : null;
+  const vars   = varKey ? INTERVAL_VARS[varKey] : null;
+  const varIdx = variants[detailDateKey] || 0;
+  const displayDetail = (vars && vars[varIdx]) ? vars[varIdx].desc : detail;
+
+  // Days to race from this workout day
+  const dtRace = Math.max(0, Math.ceil((RACE_DATE - date) / 86400000));
+
+  // Pills
+  const pills = [dist, pace, rpe].filter(Boolean)
+    .map(t => `<span class="pill">${esc(t)}</span>`).join('');
+
+  // Variation picker HTML
+  let varHtml = '';
+  if (vars) {
+    const btns = vars.map((v, i) => {
+      const sel = i === varIdx;
+      const borderColor = sel ? s.bd : '#DDDBD5';
+      const bgColor = sel ? s.bg : '#F6F5F2';
+      return `<button class="var-btn ${sel?'sel':''}"
+        style="${sel ? `background:${bgColor};border-color:${borderColor}` : ''}"
+        onclick="setVariant('${detailDateKey}',${i})">
+        <span class="var-radio">${sel ? '●' : '○'}</span>
+        <span class="var-name">${esc(v.name)}</span>
+      </button>`;
+    }).join('');
+    varHtml = `<div class="scard">
+      <div class="scard-lbl">Workout Variation</div>
+      ${btns}
+    </div>`;
+  }
+
+  // Week strip
+  const weekRows = w.days.map((dd, ddi) => {
+    const ds = TYPE_STYLE[dd[0]];
+    const dayDate = weekDayDate(wi, ddi);
+    const dayDk = toKey(dayDate);
+    const dayDone = !!done[dayDk];
+    const isThis = ddi === di;
+    const rowBg = isThis ? `background:${ds.bg};border-radius:10px` : '';
+    const lbl = dayDone
+      ? `<span style="text-decoration:line-through;color:var(--done-bd);opacity:.75">${esc(dd[1])}</span>`
+      : `<span style="color:${ds.tx}">${esc(dd[1])}</span>`;
+    return `<div class="wrow" style="${rowBg}">
+      <span class="wrow-day">${DAY_NAMES[ddi]}</span>
+      <span class="wrow-ico">${dayDone ? '✅' : ds.ico}</span>
+      <span class="wrow-lbl" style="font-weight:${isThis?700:400}">${lbl}</span>
+      ${dd[2] ? `<span class="wrow-dist">${esc(dd[2])}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('det-body').innerHTML = `
+    <div class="wo-card" style="background:${s.bg};border-color:${s.bd};color:${s.tx}">
+      <div class="wo-week-lbl">WEEK ${wi+1} · PHASE ${w.phase} — ${ph.name.toUpperCase()}</div>
+      <div class="wo-title">${s.ico} ${esc(label)}</div>
+      ${pills ? `<div class="pills">${pills}</div>` : ''}
+    </div>
+
+    ${varHtml}
+
+    <div class="scard">
+      <div class="scard-lbl">Workout Detail</div>
+      <div class="scard-body">${esc(displayDetail)}</div>
+    </div>
+
+    <div class="ph-badge" style="background:${ph.bg};border-color:${ph.bd};color:${ph.tx}">
+      <div class="ph-badge-name">Phase ${ph.id} — ${ph.name} &nbsp;·&nbsp; Wks ${ph.weeks}</div>
+      <div class="ph-badge-desc">${ph.desc}</div>
+      ${w.rec ? '<div class="recovery-tag">⚡ Recovery week — keep it easy</div>' : ''}
+    </div>
+
+    <button class="done-btn ${isDone?'done':''}" id="done-btn" onclick="toggleDone()">
+      <div class="done-check">
+        <span class="done-check-mark">✓</span>
+      </div>
+      <span class="done-lbl">${isDone ? 'Workout complete 🎉' : 'Mark as complete'}</span>
+    </button>
+
+    ${dtRace > 0 ? `<div class="race-chip">
+      <span class="race-chip-lbl">Days to race day</span>
+      <span class="race-chip-num">${dtRace}</span>
+    </div>` : ''}
+
+    <div class="scard">
+      <div class="scard-lbl">This Week</div>
+      ${weekRows}
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  ACTIONS
+// ─────────────────────────────────────────────────────────────────
+function toggleDone() {
+  if (!detailDateKey) return;
+  done[detailDateKey] = !done[detailDateKey];
+  if (!done[detailDateKey]) delete done[detailDateKey];
+  saveDone();
+  renderDetail();
+  renderCalendar();
+}
+
+function setVariant(dk, idx) {
+  variants[dk] = idx;
+  saveVariants();
+  renderDetail();
+}
+
+function prevMonth() {
+  if (currentMonthIdx > 0) { currentMonthIdx--; renderCalendar(); }
+}
+function nextMonth() {
+  if (currentMonthIdx < months.length-1) { currentMonthIdx++; renderCalendar(); }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────────────────
+(function init() {
+  loadState();
+
+  // Set initial month to today's month (or first month if past/future)
+  const today = new Date();
+  const idx = months.findIndex(m =>
+    m.getMonth() === today.getMonth() && m.getFullYear() === today.getFullYear()
+  );
+  currentMonthIdx = idx >= 0 ? idx : 0;
+
+  updateCountdown();
+  renderCalendar();
+  renderPhases();
+
+  document.getElementById('prev-btn').addEventListener('click', prevMonth);
+  document.getElementById('next-btn').addEventListener('click', nextMonth);
+  document.getElementById('back-btn').addEventListener('click', closeDetail);
+
+  // Swipe-right to close detail on mobile
+  let touchStartX = 0;
+  document.getElementById('det-view').addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  document.getElementById('det-view').addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientX - touchStartX > 60) closeDetail();
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
